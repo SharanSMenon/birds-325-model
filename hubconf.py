@@ -1,7 +1,11 @@
 from torch import nn
 import torch
-from timm.models.vision_transformer import deit_tiny_patch16_224
+from timm.models.vision_transformer import deit_tiny_patch16_224 as _deit_tiny
 dependencies = ['torch', "timm"]
+
+MODEL_URLS = {
+    "deit_tiny": "https://raw.githubusercontent.com/SharanSMenon/birds-325-model/main/birds-325-deit-tiny-patch16-224.pth"
+}
 
 
 def birds_325_deit_tiny_patch16_224(pretrained=True):
@@ -13,8 +17,7 @@ def birds_325_deit_tiny_patch16_224(pretrained=True):
     :return: a pretrained birds_325 model
     :rtype: torch.nn.Module
     """
-    loaded = torch.jit.load("birds-325-deit-tiny-patch16-224.zip")
-    model = deit_tiny_patch16_224(pretrained=False)
+    model = _deit_tiny(pretrained=False)
     n_inputs = model.head.in_features
     model.head = nn.Sequential(
         nn.Linear(n_inputs, 2048),
@@ -23,6 +26,7 @@ def birds_325_deit_tiny_patch16_224(pretrained=True):
         nn.Linear(2048, 325) # 325 classes
     )
     if pretrained:
-        state_dict = loaded.state_dict()
+        url = MODEL_URLS["deit_tiny"]
+        state_dict = torch.hub.load_state_dict_from_url(url)
         model.load_state_dict(state_dict)
     return model
